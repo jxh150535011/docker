@@ -1,0 +1,62 @@
+# musl libc not glibc
+FROM alpine:3.18
+# FROM python:alpine3.18
+ENV NODE_VERSION 21.5.0
+WORKDIR /home
+
+# RUN apk add --update nodejs npm
+# https://pkgs.alpinelinux.org/packagesaarch64
+# https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-arm64.tar.gz
+# https://npmmirror.com/mirrors/node/v20.10.0/node-v20.10.0-linux-arm64.tar.gz
+RUN mkdir -p /home/node
+RUN wget "https://npmmirror.com/mirrors/node/v$NODE_VERSION/node-v$NODE_VERSION-linux-arm64.tar.gz" \
+  && tar -xzf "/home/node-v$NODE_VERSION-linux-arm64.tar.gz" -C /home/node \
+  && rm -f "/home/node-v$NODE_VERSION-linux-arm64.tar.gz"
+
+# RUN wget https://npmmirror.com/mirrors/node/v20.10.0/node-v20.10.0-linux-x64.tar.gz \
+#   && tar -xzf /home/node-v20.10.0-linux-x64.tar.gz -C /home/node \
+#   && rm -f /home/node-v20.10.0-linux-x64.tar.gz
+# RUN apk update && apk add --no-cache libc6-compat
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+# ca-certificates nghttp2-libs brotli-libs c-ares libgcc
+# RUN apk add --no-cache binutils-gold libc6-compat libstdc++6 libstdc++ gnupg g++ gcc libgcc gcompat linux-headers
+# RUN apk add --no-cache make python3
+# RUN apk add gcc g++ make linux-headers python3 --no-cache
+RUN apk add libstdc++ --virtual .build-deps curl
+RUN apk add --no-cache --virtual .build-deps-full \
+        binutils-gold \
+        g++ \
+        gcc \
+        gnupg \
+        libgcc \
+        linux-headers \
+        make \
+        python3
+ENV LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
+
+RUN apk add nodejs
+
+# RUN mkdir -p /lib64 \
+#   && ln -s /lib/ld-musl-aarch64.so.1 /lib64/ld-linux-aarch64.so.2
+
+# RUN wget https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
+# RUN mkdir -p /home/dll
+# RUN tar -xzf go1.13.4.linux-amd64.tar.gz -C /home/dll
+
+# ENV NODE_HOME="/home/node/node-v$NODE_VERSION-linux-arm64"
+# ENV PATH=$NODE_HOME/bin:$PATH
+# RUN echo 'export PATH=/home/node/node-v20.10.0-linux-arm64/bin:$PATH' >> /etc/profile
+# RUN echo "export PATH=/home/node/node-v20.10.0-linux-arm64/bin:$PATH" >> ~/.bash_profile
+# RUN . /etc/profile && . ~/.bash_profile
+# RUN sh -c '/home/node/node-v20.10.0-linux-arm64/bin/node -v'
+# RUN ln -s /home/node/node-v20.10.0-linux-arm64/bin/node /usr/bin/nodejs
+
+CMD ["/bin/sh"]
+
+# https://dl-cdn.alpinelinux.org/alpine/v3.18/main/aarch64/APKINDEX.tar.gz
+# https://dl-cdn.alpinelinux.org/alpine/v3.18/community/aarch64/APKINDEX.tar.gz
+# 根本无法下载
+# RUN apk add --update nodejs npm
+
+# qemu-x86_64-static: Could not open '/lib64/ld-linux-x86-64.so.2': No such file or directory
+# podman info --format '{{.Host.Arch}}'
