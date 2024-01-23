@@ -1,0 +1,50 @@
+FROM python:3.12-slim
+ENV NODE_VERSION 21.5.0
+
+# 打开终端输入 root 用户名和密码
+# /sbin/adduser 用户名 sudo
+
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/*
+# RUN sed -i 's/mirrors.aliyun.com/ftp.debian.org/g' /etc/apt/sources.list
+
+# ENV DEBIAN_ARG "buster main contrib non-free bookworm bookworm-updates bookworm-security buster/updates InRelease"
+
+RUN echo "deb https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib" > /etc/apt/sources.list \
+    && echo "deb-src https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib" >> /etc/apt/sources.list \
+    && echo "deb https://mirrors.aliyun.com/debian-security/ bookworm-security main" >> /etc/apt/sources.list \
+    && echo "deb-src https://mirrors.aliyun.com/debian-security/ bookworm-security main" >> /etc/apt/sources.list \
+    && echo "deb https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib" >> /etc/apt/sources.list \
+    && echo "deb-src https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib" >> /etc/apt/sources.list \
+    && echo "deb https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib" >> /etc/apt/sources.list \
+    && echo "deb-src https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib" >> /etc/apt/sources.list \
+
+WORKDIR /home
+
+RUN apt-get update && apt-get install -y wget
+
+RUN wget --progress=bar:force -P /home "https://npmmirror.com/mirrors/node/v$NODE_VERSION/node-v$NODE_VERSION-linux-arm64.tar.gz"
+RUN tar -xzf "/home/node-v$NODE_VERSION-linux-arm64.tar.gz" -C /home/ \
+  && rm -f "/home/node-v$NODE_VERSION-linux-arm64.tar.gz"
+
+
+ENV NODE_HOME="/home/node-v$NODE_VERSION-linux-arm64"
+ENV PATH=$NODE_HOME/bin:$PATH
+
+RUN node -v
+
+# 开始安装python 的工程包
+
+# RUN apk add --no-cache nodejs
+# RUN node -v
+# RUN pip config set global.index-url 镜像源的URL
+# RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+# RUN pip install --upgrade pip
+# RUN pip3 install torch=2.1.2
+# RUN pip3 install torch torchvision torchaudio
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# pip3 install torch --index-url https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+# pip install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
+# pip install torch===1.4.0 -f https://download.pytorch.org/whl/torch_stable.html
+# pip3 install --pre torch  --index-url https://download.pytorch.org/whl/nightly/cu118
+
+CMD ["/bin/sh"]
