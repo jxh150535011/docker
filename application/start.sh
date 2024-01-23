@@ -11,14 +11,16 @@ fi
 # docker rmi -f $name:$tag
 
 oimageid=$(docker images -q --filter=reference="$name:$tag" | head -n 1)
+# | tee build.log
 docker build -f ./Dockerfile  -t $name:$tag .
 nimageid=$(docker images -q --filter=reference="$name:$tag" | head -n 1)
 
 # # 所以采用先获取到上次的镜像id 
-if [ $oimageid ] && [ $oimageid != $nimageid ] ; then
-  docker rmi -f $oimageid
-fi
-
+# if [ $oimageid ] && [ $oimageid != $nimageid ] ; then
+#   docker rmi -f $oimageid
+# fi
+# 删除所有为none的镜像
+docker rmi -f $(docker images -q --filter "dangling=true")
 docker run -it --name $name -d $name:$tag
 
 
