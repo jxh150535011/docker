@@ -21,6 +21,6 @@ nimageid=$(docker images -q --filter=reference="$name:$tag" | head -n 1)
 # fi
 # 删除所有为none的镜像
 docker rmi -f $(docker images -q --filter "dangling=true")
-docker run -it --name $name -d $name:$tag
+docker run -p 3000:3000 -it --name $name -d $name:$tag
 
 

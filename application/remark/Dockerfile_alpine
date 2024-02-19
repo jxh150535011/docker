@@ -17,6 +17,9 @@ RUN wget "https://npmmirror.com/mirrors/node/v$NODE_VERSION/node-v$NODE_VERSION-
 #   && tar -xzf /home/node-v20.10.0-linux-x64.tar.gz -C /home/node \
 #   && rm -f /home/node-v20.10.0-linux-x64.tar.gz
 # RUN apk update && apk add --no-cache libc6-compat
+# debian
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+# alpine
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 # ca-certificates nghttp2-libs brotli-libs c-ares libgcc
 # RUN apk add --no-cache binutils-gold libc6-compat libstdc++6 libstdc++ gnupg g++ gcc libgcc gcompat linux-headers

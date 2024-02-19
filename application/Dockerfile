@@ -1,7 +1,9 @@
 # Python 3.12.1
+# podman machine start 
 # 查看 glibc 版本 ldd --version 2.36
 # 查看 debian 版本 cat /etc/debian_version 12.4
-FROM python:3.12-slim
+# FROM python:3.12-slim
+FROM python:3.11.7-slim
 ENV NODE_VERSION 21.5.0
 
 # 打开终端输入 root 用户名和密码
@@ -66,41 +68,55 @@ RUN ln -sf /bin/bash /bin/sh
 
 # RUN conda -version
 
-# 因为 pytorch 还不支持3.12版本 安装版本管理工具 pyenv 的python 管理工具
-ENV PYENV_HOME="/home/.pyenv"
-RUN mkdir -p $PYENV_HOME
-ENV PATH=$PYENV_HOME/bin:$PATH
-COPY ./pyenv-master $PYENV_HOME
-# command -v pyenv >/dev/null
-RUN cd $PYENV_HOME && src/configure && make -C src
-RUN echo 'command -v pyenv >/dev/null || export "PATH=$PYENV_HOME/bin:$PATH"' > /etc/profile \
-  && source /etc/profile \
-  && eval "$(pyenv init -)" \
-  && pyenv --version
+# # 因为 pytorch 还不支持3.12版本 安装版本管理工具 pyenv 的python 管理工具
+# ENV PYENV_HOME="/home/.pyenv"
+# RUN mkdir -p $PYENV_HOME
+# ENV PATH=$PYENV_HOME/bin:$PATH
+# COPY ./pyenv-master $PYENV_HOME
+# # command -v pyenv >/dev/null
+# RUN cd $PYENV_HOME && src/configure && make -C src
+# RUN echo 'command -v pyenv >/dev/null || export "PATH=$PYENV_HOME/bin:$PATH"' > /etc/profile \
+#   && source /etc/profile \
+#   && eval "$(pyenv init -)" \
+#   && pyenv --version
+
+# # 安装新的版本
+# RUN export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1 \
+#   && export PYTHON_BUILD_MIRROR_URL="https://mirrors.huaweicloud.com/python" \
+#   && pyenv install 3.11.7
 
 # 创建python虚拟环境 
-
-RUN export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1 \
-  && export PYTHON_BUILD_MIRROR_URL="https://mirrors.huaweicloud.com/python" \
-  && pyenv install 3.11.7
-# RUN python3 -m venv /home/python-venv
-# ENV PATH=/home/python-venv/bin:$PATH
+RUN python3 -m venv /home/python-venv
+ENV PATH=/home/python-venv/bin:$PATH
 # source python-venv/bin/activate
 # RUN python-venv/bin/activate
 # deactivate
 
 # 开始安装深度学习框架
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
+RUN pip install --upgrade pip
+RUN yes | apt install python3-pip
+RUN pip3 install torch
+RUN pip3 install torchvision torchaudio
+
+# ModelScope Libarary
+RUN pip install modelscope
+RUN pip install "modelscope[multi-modal]"
 
 
-# RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
-# RUN pip install --upgrade pip
-# RUN yes | apt install python3-pip
-# RUN pip3 install torch
+RUN pip install gradio scikit-image easydict fairseq
 
-# https://mirrors.aliyun.com/pypi/simple/
-# RUN pip3 install torch torchvision torchaudio
+# 2.15.0 1.15
+RUN pip install tensorflow==2.11.0
 
+# 安装 numpy 的兼容版本
+# RUN pip install 'numpy>1.23'
+# RUN pip install numpy==1.23.1
 
+# 拷贝应用
+# COPY ./apps/image-ai-main /home/apps/image-ai-main
+
+# RUN cd /home/apps/image-ai-main && gradio pages/removebg.py removeBgApplication
 
 # RUN apk add --no-cache nodejs
 # RUN node -v
@@ -115,4 +131,5 @@ RUN export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1 \
 # pip install torch===1.4.0 -f https://download.pytorch.org/whl/torch_stable.html
 # pip3 install --pre torch  --index-url https://download.pytorch.org/whl/nightly/cu118
 
+EXPOSE 80 90 443 8080 3000
 CMD ["/bin/sh"]
